@@ -124,7 +124,7 @@
         <div class="color"></div>
         <hr/>
         <span>Backgrounds:</span><br/>
-        <button id="clean" onclick="pickTool('note')">⬜</button>
+        <button id="clean" onclick="cleanBackground()">⬜</button>
         <button id="squares" onclick="background()">🔲</button>
         <hr/>
         <span id="saved">Saved: ✔</span>
@@ -148,7 +148,12 @@
       ctx.fontStyle='black'
       const editor = document.getElementById('editor')
 
+      function cleanBackground() {
+        c.style.backgroundImage = 'none'
+      }
       function background() {
+        const imageDataBackup = ctx.getImageData(0,0,c.offsetWidth, c.offsetHeight)
+        ctx.clearRect(0,0,c.offsetWidth, c.offsetHeight)
         ctx.strokeStyle = 'black'
         ctx.lineWidth = 0.25
         for (let i = 0; i < c.width; i+=25){
@@ -157,6 +162,14 @@
         for (let i = 0; i < c.height; i+=25){
           drawLine(0, i, c.width, i)
         }
+        const backgroundImageData = c.toDataURL()
+        ctx.clearRect(0,0,c.offsetWidth, c.offsetHeight)
+        const i = new Image
+        i.src = backgroundImageData
+        i.onload = () => {
+          c.style.backgroundImage = `url('${backgroundImageData}')`
+        }
+        ctx.putImageData(imageDataBackup, 0,0)
       }
       function notSaved () {
         const e = document.getElementById('saved')
@@ -207,27 +220,29 @@
         dropFocus()
         switch (tool) {
           case 'eraser':
-            ctx.strokeStyle = '#eee';
-            ctx.fillStyle = '#eee';
-            ctx.lineWidth = 30;
+            ctx.globalCompositeOperation="destination-out";
+            ctx.lineWidth = 20;
             break;
           case 'pen':
+            ctx.globalCompositeOperation="source-over";
             ctx.strokeStyle = currentColor;
             ctx.lineWidth = 3;
             break
           case 'brush':
+            ctx.globalCompositeOperation="source-over";
+            ctx.fillStyle = currentColor;
             ctx.strokeStyle = currentColor;
             ctx.lineWidth = 15;
             break
           case 'text':
+            ctx.globalCompositeOperation="source-over";
             ctx.fillStyle = currentColor;
             const e = document.getElementById('editor');
             e.value = ''
             e.focus()
             break;
           case 'clear':
-            ctx.fillStyle = '#eee'
-            ctx.fillRect(0,0,c.offsetWidth,c.offsetHeight)
+            ctx.clearRect(0,0,c.offsetWidth,c.offsetHeight)
             isSaved()
             break
           case 'save':
@@ -426,10 +441,8 @@
           drawLine(lastX - 300, lastY, e.x - 300, e.y, 10)
           notSaved()
         }
-        lastX = e.x
-        lastY = e.y
       }
-      const eraserHandler = (e) => {
+      const brushHandler = (e) => {
         if (event.buttons === 1) {
           drawLine(lastX - 300, lastY, e.x - 300, e.y, 10)
           ctx.beginPath()
@@ -438,21 +451,19 @@
           ctx.closePath()
           notSaved()
         }
-        lastX = e.x
-        lastY = e.y
       }
       c.onmousemove = (e) => {
         switch(tool) {
-          case 'eraser':
-            eraserHandler(e);
-            break;
           case 'pen':
             penHandler(e);
             break;
+          case 'eraser':
           case 'brush':
-            eraserHandler(e);
+            brushHandler(e);
             break;
         }
+        lastX = e.x
+        lastY = e.y
       }
       c.onclick = (e) => {
         switch(tool) {
