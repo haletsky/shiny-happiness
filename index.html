@@ -39,7 +39,8 @@
         z-index: 99999;
       }
       #board {
-        flex: 1
+        display: flex;
+        flex: 1;
       }
       textarea {
         background-color: #323232;
@@ -141,7 +142,6 @@
       const c = document.getElementById("canvas");
       c.width = c.offsetWidth
       c.height = c.clientHeight
-      c.style.height = `${c.clientHeight}px`
       let currentColor = 'black'
       const ctx = c.getContext("2d");
       ctx.font = '30pt Times New Roman'
