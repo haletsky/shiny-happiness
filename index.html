@@ -1,0 +1,480 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js" crossorigin="anonymous"></script>
+    <style>
+      body {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+      }
+      #canvas {
+        flex: 1;
+        height: 100%;
+        width: 100%;
+        background-color: #eee;
+      }
+      .window {
+        width: 300px;
+        height: 200px;
+        border: 1px solid darkgrey;
+        background-color: white;
+        position: fixed;
+        resize: both;
+        overflow: hidden;
+        z-index: 9999;
+        top: 10;
+        left: 310;
+        box-shadow:  0 2px 5px 0 rgba(0,0,0,0.1)
+      }
+      .focus {
+        border-color: black !important;
+        z-index: 99999;
+      }
+      #board {
+        flex: 1
+      }
+      textarea {
+        background-color: #323232;
+        border: 0;
+        color: white;
+        width: 300px;
+        flex :1
+      }
+      hr {
+        border-color: whitesmoke;
+        border-style: solid;
+      }
+      .header{
+        margin-bottom: -25px;
+        background-image: linear-gradient(#eee, #fff, #fff);
+        color: grey;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /
+      }
+      #tools {
+        font-family: sans-serif;
+        width: 300px;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /
+      }
+      #tools button {
+        background: white;
+        border: 1px solid lightgrey;
+        font-size: 18pt;
+        width: 30pt;
+        height: 30pt;
+      }
+      .color {
+        border: 1px solid grey;
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin:0;
+        padding: 0;
+      }
+      .content {
+        overflow-y: scroll;
+        overflow-x: scroll;
+        width: inherit;
+        height: inherit;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='tools'>
+      <div style="padding: 10px 10px">
+        <span>Tools:</span><br/>
+        <button id="note" onclick="pickTool('note')">📜</button>
+        <button id="pen" onclick="pickTool('pen')">🖊️</button>
+        <button id="brush" onclick="pickTool('brush')">🖌️</button>
+        <!-- <button id="line" onclick="pickTool('line')">📏</button> -->
+        <button id="eraser" onclick="pickTool('eraser')">🧽</button>
+        <button id="text" onclick="pickTool('text')">🇦</button>
+        <button id="clear" onclick="pickTool('clear')">🧹</button>
+        <button id="save" onclick="pickTool('save')">💾</button>
+        <hr/>
+        <span>Colors:</span><br/>
+        <div class="color" style="border: 2px solid black"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <hr/>
+        <span>Backgrounds:</span><br/>
+        <button id="clean" onclick="pickTool('note')">⬜</button>
+        <button id="squares" onclick="background()">🔲</button>
+        <hr/>
+        <span id="saved">Saved: ✔</span>
+      </div>
+      <textarea id="editor"></textarea>
+    </div>
+    <div id="board">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+      let focus = 0
+      let tool = 'none'
+      const c = document.getElementById("canvas");
+      c.width = c.offsetWidth
+      c.height = c.offsetHeight
+      let currentColor = 'black'
+      const ctx = c.getContext("2d");
+      ctx.font = '30pt Times New Roman'
+      ctx.fontStyle='black'
+      const editor = document.getElementById('editor')
+
+      function background() {
+        ctx.strokeStyle = 'black'
+        ctx.lineWidth = 0.25
+        for (let i = 0; i < c.width; i+=25){
+          drawLine(i, 0, i, c.height)
+        }
+        for (let i = 0; i < c.height; i+=25){
+          drawLine(0, i, c.width, i)
+        }
+      }
+      function notSaved () {
+        const e = document.getElementById('saved')
+        e.innerHTML = 'Saved: ❌'
+      }
+      function isSaved () {
+        const e = document.getElementById('saved')
+        e.innerHTML = 'Saved: ✔'
+      }
+      function dropFocus () {
+        focus = 0
+        const windows = document.getElementsByClassName('window focus')
+        for (const w of windows) {
+          w.className = 'window'
+        }
+      }
+      const colors = ['black', 'white', 'red', 'green', 'blue', 'yellow', 'pink', 'orange']
+      const divcolors = document.getElementsByClassName('color')
+      for (let i = 0; i < divcolors.length; i++) {
+        const c = divcolors[i]
+        c.style.backgroundColor = colors[i]
+        c.onclick = () => {
+        ctx.fillStyle = colors[i]
+        ctx.strokeStyle = colors[i]
+          currentColor = colors[i]
+          if (state[focus]) {
+            state[focus].setColor(colors[i])
+          }
+          const divcolors = document.getElementsByClassName('color')
+          for (const d of divcolors) {
+            d.style.border = '';
+          }
+          c.style.border = '2px solid black';
+        }
+      }
+
+      function pickTool(toolName) {
+        const tools = document.querySelectorAll('button')
+        for (const t of tools) {
+          t.className = ''
+          if (t.id === toolName) {
+            t.className = 'focus'
+          }
+        }
+
+        tool = toolName
+
+        dropFocus()
+        switch (tool) {
+          case 'eraser':
+            ctx.strokeStyle = '#eee';
+            ctx.fillStyle = '#eee';
+            ctx.lineWidth = 30;
+            break;
+          case 'pen':
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 3;
+            break
+          case 'brush':
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 15;
+            break
+          case 'text':
+            ctx.fillStyle = currentColor;
+            const e = document.getElementById('editor');
+            e.value = ''
+            e.focus()
+            break;
+          case 'clear':
+            ctx.fillStyle = '#eee'
+            ctx.fillRect(0,0,c.offsetWidth,c.offsetHeight)
+            isSaved()
+            break
+          case 'save':
+            saveStorage();
+            isSaved()
+        }
+      }
+
+      const md = window.markdownit();
+      const compress = window.LZString.compress.bind(window.LZString)
+      const decompress = window.LZString.decompress.bind(window.LZString)
+
+      let state = { }
+      function saveStorage() {
+        const test = JSON.stringify({
+          <!-- canvas: c.toDataURL(), -->
+        state: Object.keys(state).map(k => ({
+            id: k,
+            text: (state[k.toString()].getText()),
+            color: state[k.toString()].getColor(),
+            size: state[k.toString()].getSize(),
+            ...state[k.toString()].getPosition(),
+          }))
+        })
+
+        console.log('Full state:', test.length)
+        console.log('Compressed state:', compress(test).length)
+
+        window.localStorage.setItem('canvas', c.toDataURL())
+        window.localStorage.setItem('state', JSON.stringify(
+          Object.keys(state).map(k => ({
+            id: k,
+            text: compress(state[k.toString()].getText()),
+            color: state[k.toString()].getColor(),
+            size: state[k.toString()].getSize(),
+            ...state[k.toString()].getPosition(),
+          }))))
+      }
+      function loadStorage() {
+        const canvas = window.localStorage.getItem('canvas')
+        const _state = window.localStorage.getItem('state')
+
+        if (canvas) {
+          const i = new Image
+          i.src = canvas
+          i.onload = function(){
+            ctx.drawImage(i,0,0)
+          }
+        }
+        if (_state) {
+          JSON.parse(_state).forEach((c) => initWindowFromState({ id: c.id, x: c.x, y: c.y, text :decompress(c.text), color: c.color, size: c.size }))
+        }
+      }
+      loadStorage()
+      isSaved()
+
+      function createWindowFromState(id, x, y, w, h, text, color) {
+        const win = createWindow(x, y)
+        win.onChange(text)
+        win.setId(id)
+        win.setColor(color)
+        win.setSize(w, h)
+        return win;
+      }
+
+      function initWindowFromState({ id, x, y, text, color, size = {} }) {
+        const w = createWindowFromState(id, x, y, size.width, size.height, text, color)
+        state[w.getId()] = w
+      }
+
+      function initWindow(e) {
+        const w = createWindow(e.x, e.y)
+        state[w.getId()] = w
+        notSaved()
+      }
+
+      function createWindow(x, y) {
+        let text = ''
+        let id = Math.random().toString();
+        const div = document.createElement('div')
+        div.style.left = x + 'px';
+        div.style.top = y + 'px';
+        div.className = 'window'
+        const header = document.createElement('div')
+        header.style.backgrounColor = 'red'
+        header.style.height = '40px'
+        header.className = 'header'
+        const closeButton = document.createElement('span');
+        closeButton.innerHTML = 'x';
+        closeButton.onclick = () => {
+          delete state[id]
+          div.remove();
+          notSaved()
+        }
+        header.append(closeButton);
+        div.append(header)
+        const content = document.createElement('div')
+        content.id = id
+        content.className = 'content'
+        div.append(content)
+        draggble(header)
+        document.getElementById('board').append(div)
+
+        div.onmousedown = () => {
+          focus = id
+          editor.value = state[focus].getText()
+
+          const windows = document.getElementsByClassName('window focus')
+          for (const w of windows) {
+            w.className = 'window'
+          }
+          div.className += ' focus'
+        }
+        const onChange = (t) => {
+          text = t
+          let result = md.render(text)
+          content.innerHTML = result
+          notSaved()
+        }
+
+        const getText = () => text
+        const setText = _text => { text = _text }
+        const getPosition = () => ({ x: div.offsetLeft, y: div.offsetTop })
+        const getSize = () => ({ width: div.offsetWidth, height: div.offsetHeight })
+        const setSize = (w, h) => { div.style.width = w + 'px'; div.style.height = h + 'px'; }
+        const getColor = () => div.style.backgrounColor
+        const setColor = (color) => {
+          div.style.backgroundColor = color
+          header.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.1), ${color}, ${color})`
+        }
+        const setId = _id => { id = _id }
+        const getId = () => id
+
+        return {
+          getId,
+          setId,
+          onChange,
+          getText,
+          setText,
+          getSize,
+          setSize,
+          getPosition,
+          getColor,
+          setColor,
+        }
+      }
+
+
+      editor.oninput = (e) => {
+        const t = e.target.value;
+
+        if (state[focus]) {
+          state[focus].onChange(t);
+          notSaved()
+        }
+      }
+
+      function draggble(element) {
+        element.onmousedown = dragMouseDown
+
+        function dragMouseDown(e) {
+          e = e || window.event;
+          e.preventDefault();
+          // get the mouse cursor position at startup:
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          document.onmouseup = closeDragElement;
+          // call a function whenever the cursor moves:
+          document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+          e = e || window.event;
+          e.preventDefault();
+          // calculate the new cursor position:
+          pos1 = pos3 - e.clientX;
+          pos2 = pos4 - e.clientY;
+          pos3 = e.clientX;
+          pos4 = e.clientY;
+          // set the element's new position:
+          element.parentElement.style.top = (element.parentElement.offsetTop - pos2) + "px";
+          element.parentElement.style.left = (element.parentElement.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+          // stop moving when mouse button is released:
+          document.onmouseup = null;
+          document.onmousemove = null;
+          notSaved()
+        }
+      }
+
+      let lastX = 0, lastY = 0
+      const penHandler = (e) => {
+        if (event.buttons === 1) {
+          drawLine(lastX - 300, lastY, e.x - 300, e.y, 10)
+          notSaved()
+        }
+        lastX = e.x
+        lastY = e.y
+      }
+      const eraserHandler = (e) => {
+        if (event.buttons === 1) {
+          drawLine(lastX - 300, lastY, e.x - 300, e.y, 10)
+          ctx.beginPath()
+          ctx.ellipse(e.x - 300, e.y, ctx.lineWidth/2, ctx.lineWidth/2, 0, 0, 180)
+          ctx.fill()
+          ctx.closePath()
+          notSaved()
+        }
+        lastX = e.x
+        lastY = e.y
+      }
+      c.onmousemove = (e) => {
+        switch(tool) {
+          case 'eraser':
+            eraserHandler(e);
+            break;
+          case 'pen':
+            penHandler(e);
+            break;
+          case 'brush':
+            eraserHandler(e);
+            break;
+        }
+      }
+      c.onclick = (e) => {
+        switch(tool) {
+          case 'note':
+            initWindow(e);
+            notSaved()
+            break;
+          case 'text':
+            const { value } = document.getElementById('editor');
+            ctx.fillText(value, e.x - 300, e.y)
+            tool = 'none'
+            notSaved()
+            break;
+        }
+      }
+
+      function drawLine (x1, y1, x2, y2) {
+        if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) {
+          return
+        }
+
+        ctx.beginPath()
+        ctx.moveTo(x1, y1)
+        ctx.lineTo(x2, y2)
+        ctx.stroke()
+        ctx.closePath()
+      }
+    </script>
+  </body>
+</html>
