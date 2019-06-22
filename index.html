@@ -140,8 +140,9 @@
       let focus = 0
       let tool = 'none'
       const c = document.getElementById("canvas");
-      <!-- c.width = c.offsetWidth -->
-      <!-- c.height = c.clientHeight -->
+      const board = document.getElementById('board');
+      c.width = board.clientWidth
+      c.height = board.clientHeight
       let currentColor = 'black'
       const ctx = c.getContext("2d");
       ctx.font = '30pt Times New Roman'
