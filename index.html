@@ -141,6 +141,7 @@
       const c = document.getElementById("canvas");
       c.width = c.offsetWidth
       c.height = c.clientHeight
+      c.style.height = `${c.clientHeight}px`
       let currentColor = 'black'
       const ctx = c.getContext("2d");
       ctx.font = '30pt Times New Roman'
