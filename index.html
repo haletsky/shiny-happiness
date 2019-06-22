@@ -4,6 +4,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js" crossorigin="anonymous"></script>
     <style>
+      html {
+        height:100%
+      }
       body {
         display: flex;
         flex: 1;
@@ -137,7 +140,7 @@
       let tool = 'none'
       const c = document.getElementById("canvas");
       c.width = c.offsetWidth
-      c.height = c.offsetHeight
+      c.height = c.clientHeight
       let currentColor = 'black'
       const ctx = c.getContext("2d");
       ctx.font = '30pt Times New Roman'
