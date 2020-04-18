@@ -1,9 +1,6 @@
-const path = require('path')
-const fs = require('fs')
-const app = require('express')()
+const { join } = require('path')
+const express = require('express')
+const app = express()
 
-app.use('/:file', (req, res) => {
-  res.sendFile(path.join(__dirname, req.params.file))
-})
-
+app.use(express.static(join(__dirname, 'public')))
 app.listen(8000)

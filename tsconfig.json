@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "suppressExcessPropertyErrors": true,
+    "outDir": "./dist",
+    "incremental": true,
+    "rootDir": "./src"
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "temp/*",
+    ".git"
+  ]
+}

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.4.2/markdown-it.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js" crossorigin="anonymous"></script> -->
+    <style>
+      html {
+        height:100%
+      }
+      body {
+        display: flex;
+        flex: 1;
+        flex-direction: row;
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+      }
+      #canvas {
+        flex: 1;
+        background-color: #eee;
+        overflow: hidden;
+      }
+      .window {
+        width: 300px;
+        height: 200px;
+        border: 1px solid darkgrey;
+        background-color: white;
+        position: fixed;
+        resize: both;
+        overflow: hidden;
+        z-index: 9999;
+        top: 10;
+        left: 310;
+        box-shadow:  0 2px 5px 0 rgba(0,0,0,0.1)
+      }
+      .focus {
+        border-color: black !important;
+        z-index: 99999;
+      }
+      #board {
+        display: flex;
+        flex: 1;
+      }
+      textarea {
+        background-color: #323232;
+        border: 0;
+        color: white;
+        width: 300px;
+        flex :1
+      }
+      hr {
+        border-color: whitesmoke;
+        border-style: solid;
+      }
+      .header{
+        margin-bottom: -25px;
+        background-image: linear-gradient(#eee, #fff, #fff);
+        color: grey;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /
+      }
+      #tools {
+        font-family: sans-serif;
+        width: 300px;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
+        -webkit-touch-callout: none; /* iOS Safari */
+          -webkit-user-select: none; /* Safari */
+           -khtml-user-select: none; /* Konqueror HTML */
+             -moz-user-select: none; /* Firefox */
+              -ms-user-select: none; /* Internet Explorer/Edge */
+                  user-select: none; /
+      }
+      #tools button {
+        background: white;
+        border: 1px solid lightgrey;
+        font-size: 18pt;
+        width: 30pt;
+        height: 30pt;
+      }
+      .color {
+        border: 1px solid grey;
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin:0;
+        padding: 0;
+      }
+      .content {
+        overflow-y: scroll;
+        overflow-x: scroll;
+        width: inherit;
+        height: inherit;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='tools'>
+      <div style="padding: 10px 10px">
+        <span>Tools:</span><br/>
+        <button id="note">📜</button>
+        <button id="pen">🖊️</button>
+        <button id="brush">🖌️</button>
+        <!-- <button id="line" onclick="pickTool('line')">📏</button> -->
+        <button id="eraser">🧽</button>
+        <button id="text">🇦</button>
+        <button id="clear">🧹</button>
+        <button id="save">💾</button>
+        <hr/>
+        <span>Colors:</span><br/>
+        <div class="color" style="border: 2px solid black"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <div class="color"></div>
+        <hr/>
+        <span>Backgrounds:</span><br/>
+        <button id="clean">⬜</button>
+        <button id="squares">🔲</button>
+        <hr/>
+        <span id="saved">Saved: ✔</span>
+      </div>
+      <textarea id="editor"></textarea>
+    </div>
+    <div id="board">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <script src="bundle.js"></script>
+  </body>
+</html>

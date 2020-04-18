@@ -1,0 +1,53 @@
+import { compress, decompress } from 'lz-string'
+
+const state = { }
+
+export function get_state ()
+{
+  return state
+}
+
+export function save_storage() {
+  const c = document.getElementById('canvas') as HTMLCanvasElement
+  const test = JSON.stringify({
+  // canvas: c.toDataURL(),
+  state: Object.keys(state).map(k => ({
+      id: k,
+      text: (state[k.toString()].getText()),
+      color: state[k.toString()].getColor(),
+      size: state[k.toString()].getSize(),
+      ...state[k.toString()].getPosition(),
+    }))
+  })
+
+  console.log('Full state:', test.length)
+  console.log('Compressed state:', compress(test).length)
+
+  window.localStorage.setItem('canvas', c.toDataURL())
+  window.localStorage.setItem('state', JSON.stringify(
+    Object.keys(state).map(k => ({
+      id: k,
+      text: compress(state[k.toString()].getText()),
+      color: state[k.toString()].getColor(),
+      size: state[k.toString()].getSize(),
+      ...state[k.toString()].getPosition(),
+    }))))
+}
+
+export function load_storage ()
+{
+  const canvas = window.localStorage.getItem('canvas')
+  const _state = window.localStorage.getItem('state')
+
+  if (canvas) {
+    const i = new Image
+    i.src = canvas
+    i.onload = function(){
+      const c = document.getElementById('canvas') as HTMLCanvasElement
+      const ctx = c.getContext('2d')
+      ctx.drawImage(i,0,0)
+    }
+  }
+
+  return _state && JSON.parse(_state).map((c: any) => ({ ...c, text: decompress(c.text) }));
+}
