@@ -9,19 +9,6 @@ export function get_state ()
 
 export function save_storage() {
   const c = document.getElementById('canvas') as HTMLCanvasElement
-  const test = JSON.stringify({
-  // canvas: c.toDataURL(),
-  state: Object.keys(state).map(k => ({
-      id: k,
-      text: (state[k.toString()].getText()),
-      color: state[k.toString()].getColor(),
-      size: state[k.toString()].getSize(),
-      ...state[k.toString()].getPosition(),
-    }))
-  })
-
-  console.log('Full state:', test.length)
-  console.log('Compressed state:', compress(test).length)
 
   window.localStorage.setItem('canvas', c.toDataURL())
   window.localStorage.setItem('state', JSON.stringify(

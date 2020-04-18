@@ -15,7 +15,6 @@ export function init_canvas ()
   let lastX = 0, lastY = 0
   const penHandler = (e: MouseEvent) => {
     if (e.buttons === 1) {
-      console.log('draw')
       draw_line(ctx, lastX - 300, lastY, e.x - 300, e.y)
       is_saved(false)
     }
