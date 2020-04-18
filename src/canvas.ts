@@ -58,13 +58,13 @@ export function init_canvas ()
   }
 }
 
-export function clean_background()
+export function clean_background ()
 {
   const c = document.getElementById('canvas') as HTMLCanvasElement
   c.style.backgroundImage = 'none'
 }
 
-export function background()
+export function background ()
 {
   const c = document.getElementById('canvas') as HTMLCanvasElement
   const ctx = c.getContext('2d')
