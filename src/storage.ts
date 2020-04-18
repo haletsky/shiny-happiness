@@ -7,7 +7,7 @@ export function get_state ()
   return state
 }
 
-export function save_storage()
+export function save_storage ()
 {
   const c = document.getElementById('canvas') as HTMLCanvasElement
 
