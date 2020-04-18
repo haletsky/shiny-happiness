@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:dev": "webpack --config weback.development.config.js --watch",
     "build": "webpack --config weback.config.js",
     "start": "node index.js"
   },

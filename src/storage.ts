@@ -1,5 +1,18 @@
 import { compress, decompress } from 'lz-string'
 
+interface State extends Array<StateItem> { }
+interface StateItem {
+  id: number,
+  text: string,
+  color: string,
+  x: number,
+  y: number,
+  size: {
+    width: number,
+    height: number
+  }
+}
+
 const state = { }
 
 export function get_state ()
@@ -37,5 +50,5 @@ export function load_storage ()
     }
   }
 
-  return _state && JSON.parse(_state).map((c: any) => ({ ...c, text: decompress(c.text) }));
+  return _state && (JSON.parse(_state) as State).map(i => ({ ...i, text: decompress(i.text) }));
 }

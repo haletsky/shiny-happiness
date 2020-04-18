@@ -4,7 +4,7 @@ import { get_focus } from './ui'
 import { clean_background, background } from './canvas'
 
 export enum Colors {
-  BLACK = 'back',
+  BLACK = 'black',
   WHITE = 'white',
   RED = 'red',
   GREEN = 'green',
@@ -29,17 +29,17 @@ let currentColor = 'black'
 let currentTool = Tools.NONE
 const c = document.getElementById('canvas') as HTMLCanvasElement
 const ctx = c.getContext('2d')
+const state = get_state()
 
 export function init_editor ()
 {
   const editor = document.getElementById('editor') as HTMLTextAreaElement
   editor.oninput = (e: TextEvent) => {
-    // TODO: delete any
-    const state = get_state()
-    const t = (e.target as any).value
+    const window = state[get_focus()]
+    const t = (e.target as HTMLTextAreaElement).value
 
-    if (state[get_focus()]) {
-      state[get_focus()].onChange(t)
+    if (window) {
+      window.onChange(t)
       is_saved(false)
     }
   }
@@ -68,7 +68,6 @@ export function init_colors ()
     c.onclick = () => {
     ctx.fillStyle = colors[i]
     ctx.strokeStyle = colors[i]
-      const state = get_state()
       set_color(colors[i])
       if (state[get_focus()]) {
         state[get_focus()].setColor(colors[i])

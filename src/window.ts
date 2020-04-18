@@ -1,6 +1,7 @@
 import mdfn from 'markdown-it'
 import { get_state, load_storage } from './storage'
 import { get_focus, set_focus, is_saved } from './ui'
+import {set_current_tool, Tools, get_current_tool} from './tool'
 
 const md = mdfn()
 
@@ -16,13 +17,12 @@ export function init_windows ()
     win.setColor(color)
     win.setSize(size.width, size.height)
 
-    const state = get_state()
     state[win.getId()] = win
   }
 
-  const _state = load_storage()
-  if (_state) {
-    _state.forEach((c: any) => initWindowFromState({ id: c.id, x: c.x, y: c.y, text: c.text, color: c.color, size: c.size }))
+  const loadedState = load_storage()
+  if (loadedState) {
+    loadedState.forEach(initWindowFromState)
   }
 }
 
@@ -101,9 +101,9 @@ export function create_window (x: number, y: number)
 export function draggble (element: HTMLElement)
 {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
+  let currentTool = get_current_tool()
 
-  const elementDrag = (e: any) => {
-    e = e || window.event
+  const elementDrag = (e: MouseEvent) => {
     e.preventDefault()
     // calculate the new cursor position:
     pos1 = pos3 - e.clientX
@@ -116,25 +116,25 @@ export function draggble (element: HTMLElement)
   }
 
   const closeDragElement = () => {
-    // stop moving when mouse button is released:
+    set_current_tool(currentTool)
     document.onmouseup = null
     document.onmousemove = null
     is_saved(false)
   }
 
-  const drag_mouse_down = (e: MouseEvent | Event) => {
-    e = e || window.event
+  const onmove = (e: MouseEvent) => {
+    currentTool = get_current_tool()
+    set_current_tool(Tools.NONE)
     e.preventDefault()
     // get the mouse cursor position at startup:
-    // TODO: remove any
-    pos3 = (e as any).clientX
-    pos4 = (e as any).clientY
+    pos3 = e.clientX
+    pos4 = e.clientY
     document.onmouseup = closeDragElement
     // call a function whenever the cursor moves:
     document.onmousemove = elementDrag
   }
 
-  element.onmousedown = drag_mouse_down
+  element.onmousedown = onmove
 }
 
 export function launch_window (e: MouseEvent)
